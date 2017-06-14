@@ -128,6 +128,10 @@ var game = {
 };
 
 // Utility
+game.tileAtCoord = function (coordinate) {
+	return this.tileNodes[coordinate[0]][coordinate[1]];
+}
+
 game.valueAtCoord = function (coordinate) {
 	return this.tiles[coordinate[0]][coordinate[1]];
 };
@@ -464,7 +468,11 @@ game.nextTurn = function (lastx, lasty) {
 	}
 	var result = game.testWinner(lastx, lasty);
 	if (result !== null) {
-		console.info(result);
+		this.tileNodes[lastx][lasty].classList.add('winner');
+		for (var i = 0; i < result.length; i++) {
+			var tile = this.tileAtCoord(result[i]);
+			tile.classList.add('winner');
+		}
 		game.freeze('player' + this.player.toString());
 	} else {
 		this.togglePlayer();

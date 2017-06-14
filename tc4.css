@@ -72,6 +72,10 @@ svg {
 	color: hsl(50, 93%, 93%);
 }
 
+#tiles use.winner {
+	color: gold;
+}
+
 /* arrows */
 
 #arrow-north rect {
