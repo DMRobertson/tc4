@@ -6,11 +6,19 @@ const Direction = {
 	SOUTH: 1,
 	WEST: 2,
 	EAST: 3,
+	NORTHEAST: 4,
+	NORTHWEST: 5,
+	SOUTHEAST: 6,
+	SOUTHWEST: 7,
 	names: {
 		0: 'NORTH',
 		1: 'SOUTH',
 		2: 'WEST',
-		3: 'EAST'
+		3: 'EAST',
+		4: 'NORTHEAST',
+		5: 'NORTHWEST',
+		6: 'SOUTHEAST',
+		7: 'SOUTHWEST'
 	}
 };
 
@@ -33,6 +41,42 @@ var Square = {
 		edges.setAttribute('points', s);
 		container.appendChild(edges);
 	},
+	getRay: function (tiles, direction, x, y) {
+		var indices = [];
+		var width = tiles.length;
+		var height = tiles[0].length;
+		for (var i = 1; i < 4; i++) {
+			switch (direction) {
+				case Direction.NORTH:
+					indices.push([x, y - i]);
+					break;
+				case Direction.SOUTH:
+					indices.push([x, y + i]);
+					break;
+				case Direction.WEST:
+					indices.push([x - i, y]);
+					break;
+				case Direction.EAST:
+					indices.push([x + i, y]);
+					break;
+				case Direction.NORTHEAST:
+					indices.push([x + i, y - i]);
+					break;
+				case Direction.NORTHWEST:
+					indices.push([x - i, y - i]);
+					break;
+				case Direction.SOUTHEAST:
+					indices.push([x + i, y + i]);
+					break;
+				case Direction.SOUTHWEST:
+					indices.push([x - i, y + i]);
+					break;
+			}
+		}
+		return indices.filter(function (value) {
+			return 0 <= value[0] && value[0] < width && 0 <= value[1] && value[1] < height; 
+		});
+	}
 };
 
 var topologies = {
@@ -58,6 +102,7 @@ var clearNode = function (node) {
 var game = {
 	svg: null,
 	tiles: null,
+	tileNodes: null,
 	width: null,
 	height: null,
 	topology: null,
@@ -71,13 +116,14 @@ game.new = function (options) {
 	this.width = options['width'];
 	this.height = options['height'];
 	this.tiles = Array2D(this.width, this.height);
+	this.tileNodes = Array2D(this.width, this.height);
 	this.player = 0;
 	this.setupSVG();
 	this.addBoard();
 	for (var x = 0; x < this.width; x++) {
 		for (var y = 0; y < this.height; y++) {
 			this.tiles[x][y] = 0;
-			this.addTile(x, y);
+			this.tileNodes[x][y] = this.addTile(x, y);
 		}
 	}
 	this.addArrows();
@@ -103,13 +149,13 @@ game.addBoard = function () {
 	var container = this.svg.getElementById('board-group');
 	container.setAttribute('class', this.topology.name);
 	clearNode(container);
-	var board = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-	board.setAttribute('id', 'board');
+	// var board = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+	// board.setAttribute('id', 'board');
 	var width = this.width * TILE_SIZE;
 	var height = this.height * TILE_SIZE;
-	board.setAttribute('width', width);
-	board.setAttribute('height', height);
-	container.appendChild(board);
+	// board.setAttribute('width', width);
+	// board.setAttribute('height', height);
+	// container.appendChild(board);
 	this.topology.addEdges(container, width, height);
 };
 
@@ -165,6 +211,8 @@ game.addTile = function (x, y) {
 	tile.setAttribute('x', x * TILE_SIZE);
 	tile.setAttribute('y', y * TILE_SIZE);
 	tile.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#tile');
+	tile.addEventListener('mouseover', this.onTileOver.bind(this, x, y));
+	tile.addEventListener('mouseout', this.onTileOut.bind(this, x, y));
 	this.svg.getElementById('tiles').appendChild(tile);
 	return tile;
 };
@@ -172,9 +220,10 @@ game.addTile = function (x, y) {
 game.addToken = function (x, y, player) {
 	// check (player == 1 or 2) and this.tiles[x][y] === 0
 	this.tiles[x][y] = player;
-	var container = this.svg.getElementById('tiles');
+	var container = this.svg.getElementById('tokens');
 	var token = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-	token.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#token-player' + player.toString());
+	token.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#token');
+	token.setAttribute('class', 'player' + player.toString());
 	token.setAttribute('x', x * TILE_SIZE);
 	token.setAttribute('y', y * TILE_SIZE);
 	container.appendChild(token);
@@ -186,13 +235,35 @@ game.moveGhostToken = function (x, y, player) {
 		ghost.classList.add('invis');
 	} else {
 		ghost.classList.remove('invis');
-		ghost.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#token-player' + player.toString());
+		ghost.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#token');
+		ghost.setAttribute('class', 'player' + player.toString());
 		ghost.setAttribute('x', x * TILE_SIZE);
 		ghost.setAttribute('y', y * TILE_SIZE);
 	}
 };
 
 // event listeners
+game.onTileOver = function (x, y, e) {
+	console.log('OVER', x, y, this);
+	e.target.classList.add('highlight0');
+	for (var direction = 0; direction < 8; direction++) {
+		var indices = this.topology.getRay(this.tiles, direction, x, y);
+		for (var i = 0; i < indices.length; i++) {
+			var x2 = indices[i][0];
+			var y2 = indices[i][1];
+			this.tileNodes[x2][y2].classList.add('highlight' + (i + 1).toString());
+		}
+	}
+};
+
+game.onTileOut = function (x, y, e) {
+	console.log('OUT', x, y, this);
+	var tiles = this.svg.getElementById('tiles').childNodes;
+	for (var i = 0; i < tiles.length; i++) {
+		tiles[i].setAttribute('class', '');
+	}
+};
+
 game.onArrowClick = function (direction, offset, e) {
 	console.log('CLICK', Direction.names[direction], offset, e, this);
 	var target = this.getArrowTarget(direction, offset);
@@ -286,7 +357,7 @@ game.getArrowTarget = function (direction, offset) {
 			return [x + 1, y];
 	}
 	return null;
-}
+};
 
 game.nextTurn = function () {
 	this.togglePlayer();

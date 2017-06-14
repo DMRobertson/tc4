@@ -34,8 +34,10 @@ svg {
 
 /* SVG Styles */
 
-#board {
-	fill: #e8e8e8;
+/* Tiles */
+
+#tile rect {
+	fill: currentColor;
 }
 
 #tile .highlight {
@@ -46,6 +48,24 @@ svg {
 #tile .shadow {
 	fill: black;
 	fill-opacity: 0.08;
+}
+
+/* tile instances */
+
+#tiles use.highlight0 {
+	color: hsl(50, 93%, 75%);
+}
+
+#tiles use.highlight1 {
+	color: hsl(50, 93%, 81%);
+}
+
+#tiles use.highlight2 {
+	color: hsl(50, 93%, 86%);
+}
+
+#tiles use.highlight3 {
+	color: hsl(50, 93%, 93%);
 }
 
 /* arrows */
@@ -79,11 +99,17 @@ svg {
 	fill: currentColor;
 }
 
-#token-player1 use {
+/* token instances */
+
+#tokens use {
+	pointer-events: none;
+}
+
+#tokens .player1 {
 	color: red;
 }
 
-#token-player2 use {
+#tokens .player2 {
 	color: blue;
 }
 
@@ -91,7 +117,7 @@ svg {
 	opacity: 0.5;
 }
 
-.invis {
+#tokens .invis {
 	visibility: hidden;
 }
 
