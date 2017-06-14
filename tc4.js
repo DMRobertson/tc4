@@ -247,7 +247,14 @@ game.addTile = function (x, y) {
 };
 
 game.addToken = function (x, y, player) {
-
+	// check (player == 1 or 2) and this.tiles[x][y] === 0
+	this.tiles[x][y] = player;
+	var container = this.svg.getElementById('tiles');
+	var token = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+	token.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#token-player' + player.toString());
+	token.setAttribute('x', x * TILE_SIZE);
+	token.setAttribute('y', y * TILE_SIZE);
+	container.appendChild(token);
 };
 
 game.moveGhostToken = function (x, y, player) {
@@ -265,6 +272,10 @@ game.moveGhostToken = function (x, y, player) {
 // event listeners and game logic
 game.onArrowClick = function (direction, offset, e) {
 	console.log('CLICK', Direction.names[direction], offset, e, this);
+	var target = this.topology.getArrowTarget(this.tiles, direction, offset);
+	// assert target not null
+	game.addToken(target[0], target[1], this.player);
+	game.nextTurn();
 };
 
 game.onArrowOver = function (direction, offset, e) {
