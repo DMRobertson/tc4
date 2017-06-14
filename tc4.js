@@ -44,38 +44,7 @@ var Square = {
 		edges.setAttribute('points', s);
 		container.appendChild(edges);
 	},
-	getRay: function (tiles, direction, x, y) {
-		var indices = [];
-		var width = tiles.length;
-		var height = tiles[0].length;
-		for (var i = 1; i < 4; i++) {
-			switch (direction) {
-				case Direction.NORTH:
-					indices.push([x, y - i]);
-					break;
-				case Direction.SOUTH:
-					indices.push([x, y + i]);
-					break;
-				case Direction.WEST:
-					indices.push([x - i, y]);
-					break;
-				case Direction.EAST:
-					indices.push([x + i, y]);
-					break;
-				case Direction.NORTHEAST:
-					indices.push([x + i, y - i]);
-					break;
-				case Direction.NORTHWEST:
-					indices.push([x - i, y - i]);
-					break;
-				case Direction.SOUTHEAST:
-					indices.push([x + i, y + i]);
-					break;
-				case Direction.SOUTHWEST:
-					indices.push([x - i, y + i]);
-					break;
-			}
-		}
+	projectCoords: function (indices, width, height) {
 		return indices.filter(function (value) {
 			return 0 <= value[0] && value[0] < width && 0 <= value[1] && value[1] < height;
 		});
@@ -130,7 +99,7 @@ var game = {
 // Utility
 game.tileAtCoord = function (coordinate) {
 	return this.tileNodes[coordinate[0]][coordinate[1]];
-}
+};
 
 game.valueAtCoord = function (coordinate) {
 	return this.tiles[coordinate[0]][coordinate[1]];
@@ -326,7 +295,7 @@ game.freeze = function (classname) {
 game.onTileOver = function (x, y, e) {
 	e.target.classList.add('highlight0');
 	for (var direction = 0; direction < Direction.INTERCARDINAL; direction++) {
-		var indices = this.topology.getRay(this.tiles, direction, x, y);
+		var indices = this.getRay(direction, x, y);
 		for (var i = 0; i < indices.length; i++) {
 			var x2 = indices[i][0];
 			var y2 = indices[i][1];
@@ -434,14 +403,44 @@ game.getArrowTarget = function (direction, offset) {
 	return null;
 };
 
+game.getPointInRay = function (direction, i, x, y) {
+	switch (direction) {
+		case Direction.NORTH:
+			return [x, y - i];
+		case Direction.SOUTH:
+			return [x, y + i];
+		case Direction.WEST:
+			return [x - i, y];
+		case Direction.EAST:
+			return [x + i, y];
+		case Direction.NORTHEAST:
+			return [x + i, y - i];
+		case Direction.NORTHWEST:
+			return [x - i, y - i];
+		case Direction.SOUTHEAST:
+			return [x + i, y + i];
+		case Direction.SOUTHWEST:
+			return [x - i, y + i];
+	}
+};
+
+game.getRay = function (direction, x, y) {
+	var indices = [];
+	for (var i = 1; i < 4; i++) {
+		indices.push(this.getPointInRay(direction, i, x, y));
+	}
+	indices = this.topology.projectCoords(indices, this.width, this.height);
+	return indices;
+};
+
 game.testWinner = function (x, y) {
 	var placer = this.tiles[x][y];
 	// assert placer !== 0
 	for (var direction = 0; direction < Direction.HALF_INTERCARDINAL; direction++) {
-		var forward = this.topology.getRay(this.tiles, direction, x, y);
+		var forward = this.getRay(direction, x, y);
 		var fvalues = forward.map(this.valueAtCoord, this);
 		var fcount = countRun(placer, fvalues);
-		var backward = this.topology.getRay(this.tiles, direction + Direction.HALF_INTERCARDINAL, x, y);
+		var backward = this.getRay(direction + Direction.HALF_INTERCARDINAL, x, y);
 		var bvalues = backward.map(this.valueAtCoord, this);
 		var bcount = countRun(placer, bvalues);
 		if ((fcount + bcount) >= 3) {
