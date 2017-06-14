@@ -3,23 +3,26 @@ const BORDER_SIZE = 20;
 const HALF_BORDER_SIZE = 10;
 const Direction = {
 	NORTH: 0,
-	SOUTH: 1,
-	WEST: 2,
-	EAST: 3,
-	NORTHEAST: 4,
-	NORTHWEST: 5,
-	SOUTHEAST: 6,
-	SOUTHWEST: 7,
+	NORTHEAST: 1,
+	EAST: 2,
+	SOUTHEAST: 3,
+	SOUTH: 4,
+	SOUTHWEST: 5,
+	WEST: 6,
+	NORTHWEST: 7,
 	names: {
 		0: 'NORTH',
-		1: 'SOUTH',
-		2: 'WEST',
-		3: 'EAST',
-		4: 'NORTHEAST',
-		5: 'NORTHWEST',
-		6: 'SOUTHEAST',
-		7: 'SOUTHWEST'
-	}
+		1: 'NORTHEAST',
+		2: 'EAST',
+		3: 'SOUTHEAST',
+		4: 'SOUTH',
+		5: 'SOUTHWEST',
+		6: 'WEST',
+		7: 'NORTHWEST'
+	},
+	CARDINAL: [0, 2, 4, 6],
+	INTERCARDINAL: 8,
+	HALF_INTERCARDINAL: 4
 };
 
 // Define the topologies
@@ -74,7 +77,7 @@ var Square = {
 			}
 		}
 		return indices.filter(function (value) {
-			return 0 <= value[0] && value[0] < width && 0 <= value[1] && value[1] < height; 
+			return 0 <= value[0] && value[0] < width && 0 <= value[1] && value[1] < height;
 		});
 	}
 };
@@ -98,6 +101,16 @@ var clearNode = function (node) {
 	}
 };
 
+var countRun = function (needle, haystack) {
+	// largest n such that haystack[i] == needle, for all i <= n
+	for (var i = 0; i < haystack.length; i++) {
+		if (haystack[i] !== needle) {
+			break;
+		}
+	}
+	return i;
+};
+
 // main game object
 var game = {
 	svg: null,
@@ -106,8 +119,17 @@ var game = {
 	width: null,
 	height: null,
 	topology: null,
+	listeners: {
+		arrows: null,
+		tiles: null
+	},
 	player: 0,
 	playerColors: ['', '#ffbfbf', '#cfdef7']
+};
+
+// Utility
+game.valueAtCoord = function (coordinate) {
+	return this.tiles[coordinate[0]][coordinate[1]];
 };
 
 // state setup
@@ -120,14 +142,10 @@ game.new = function (options) {
 	this.player = 0;
 	this.setupSVG();
 	this.addBoard();
-	for (var x = 0; x < this.width; x++) {
-		for (var y = 0; y < this.height; y++) {
-			this.tiles[x][y] = 0;
-			this.tileNodes[x][y] = this.addTile(x, y);
-		}
-	}
+	this.addTiles();
 	this.addArrows();
-	this.nextTurn();
+	this.updateArrows();
+	this.togglePlayer();
 	document.body.classList.remove('setup');
 };
 
@@ -160,61 +178,96 @@ game.addBoard = function () {
 };
 
 game.addArrows = function () {
+	this.listeners.arrows = new Array(2 * this.width + 2 * this.height);
 	var x;
 	var y;
+	var click;
+	var over;
+	var out;
 	var arrows = this.svg.getElementById('arrows');
 	clearNode(arrows);
+	var offset = 0;
 	for (x = 0; x < this.width; x++) {
 		var north = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 		north.setAttribute('x', (x + 0.5) * TILE_SIZE);
 		north.setAttribute('y', 0);
 		north.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#arrow-north');
-		north.addEventListener('click', this.onArrowClick.bind(this, Direction.NORTH, x));
-		north.addEventListener('mouseover', this.onArrowOver.bind(this, Direction.NORTH, x));
-		north.addEventListener('mouseout', this.onArrowOut.bind(this, Direction.NORTH, x));
+		over = this.onArrowOver.bind(this, Direction.NORTH, x);
+		click = this.onArrowClick.bind(this, Direction.NORTH, x);
+		out = this.onArrowOut.bind(this, Direction.NORTH, x);
+		this.listeners.arrows[offset + x] = [over, click, out];
+		north.addEventListener('mouseover', over);
+		north.addEventListener('click', click);
+		north.addEventListener('mouseout', out);
 		arrows.appendChild(north);
 	}
+	offset += this.width;
 	for (x = 0; x < this.width; x++) {
 		var south = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 		south.setAttribute('x', (x + 0.5) * TILE_SIZE);
 		south.setAttribute('y', this.height * TILE_SIZE);
 		south.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#arrow-south');
-		south.addEventListener('click', this.onArrowClick.bind(this, Direction.SOUTH, x));
-		south.addEventListener('mouseover', this.onArrowOver.bind(this, Direction.SOUTH, x));
-		south.addEventListener('mouseout', this.onArrowOut.bind(this, Direction.SOUTH, x));
+		over = this.onArrowOver.bind(this, Direction.SOUTH, x);
+		click = this.onArrowClick.bind(this, Direction.SOUTH, x);
+		out = this.onArrowOut.bind(this, Direction.SOUTH, x);
+		this.listeners.arrows[offset + x] = [over, click, out];
+		south.addEventListener('mouseover', over);
+		south.addEventListener('click', click);
+		south.addEventListener('mouseout', out);
 		arrows.appendChild(south);
 	}
+	offset += this.width;
 	for (y = 0; y < this.height; y++) {
 		var west = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 		west.setAttribute('x', 0);
 		west.setAttribute('y', (y + 0.5) * TILE_SIZE);
 		west.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#arrow-west');
-		west.addEventListener('click', this.onArrowClick.bind(this, Direction.WEST, y));
-		west.addEventListener('mouseover', this.onArrowOver.bind(this, Direction.WEST, y));
-		west.addEventListener('mouseout', this.onArrowOut.bind(this, Direction.WEST, y));
+		over = this.onArrowOver.bind(this, Direction.WEST, y);
+		click = this.onArrowClick.bind(this, Direction.WEST, y);
+		out = this.onArrowOut.bind(this, Direction.WEST, y);
+		this.listeners.arrows[offset + y] = [over, click, out];
+		west.addEventListener('mouseover', over);
+		west.addEventListener('click', click);
+		west.addEventListener('mouseout', out);
 		arrows.appendChild(west);
 	}
+	offset += this.height;
 	for (y = 0; y < this.height; y++) {
 		var east = document.createElementNS('http://www.w3.org/2000/svg', 'use');
 		east.setAttribute('x', this.width * TILE_SIZE);
 		east.setAttribute('y', (y + 0.5) * TILE_SIZE);
 		east.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#arrow-east');
-		east.addEventListener('click', this.onArrowClick.bind(this, Direction.EAST, y));
-		east.addEventListener('mouseover', this.onArrowOver.bind(this, Direction.EAST, y));
-		east.addEventListener('mouseout', this.onArrowOut.bind(this, Direction.EAST, y));
+		over = this.onArrowOver.bind(this, Direction.EAST, y);
+		click = this.onArrowClick.bind(this, Direction.EAST, y);
+		out = this.onArrowOut.bind(this, Direction.EAST, y);
+		this.listeners.arrows[offset + y] = [over, click, out];
+		east.addEventListener('mouseover', over);
+		east.addEventListener('click', click);
+		east.addEventListener('mouseout', out);
 		arrows.appendChild(east);
 	}
 };
 
-game.addTile = function (x, y) {
-	var tile = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-	tile.setAttribute('x', x * TILE_SIZE);
-	tile.setAttribute('y', y * TILE_SIZE);
-	tile.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#tile');
-	tile.addEventListener('mouseover', this.onTileOver.bind(this, x, y));
-	tile.addEventListener('mouseout', this.onTileOut.bind(this, x, y));
-	this.svg.getElementById('tiles').appendChild(tile);
-	return tile;
+game.addTiles = function () {
+	this.listeners.tiles = new Array(this.width * this.height);
+	var i = 0;
+	for (var x = 0; x < this.width; x++) {
+		for (var y = 0; y < this.height; y++) {
+			this.tiles[x][y] = 0;
+			var tile = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+			tile.setAttribute('x', x * TILE_SIZE);
+			tile.setAttribute('y', y * TILE_SIZE);
+			tile.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#tile');
+			var over = this.onTileOver.bind(this, x, y);
+			var out = this.onTileOut.bind(this, x, y);
+			this.listeners.tiles[i] = [over, out];
+			tile.addEventListener('mouseover', over);
+			tile.addEventListener('mouseout', out);
+			this.svg.getElementById('tiles').appendChild(tile);
+			this.tileNodes[x][y] = tile;
+			i++;
+		}
+	}
 };
 
 game.addToken = function (x, y, player) {
@@ -242,11 +295,33 @@ game.moveGhostToken = function (x, y, player) {
 	}
 };
 
+game.freeze = function (classname) {
+	// destroy event listeners; show 'restart' option
+	if (classname === 'draw') {
+		document.body.setAttribute('class', 'draw');
+	} else {
+		document.body.classList.add('winner');
+	}
+	var i;
+	var tiles = this.svg.getElementById('tiles').childNodes;
+	for (i = 0; i < tiles.length; i++) {
+		tiles[i].removeEventListener('mouseover', this.listeners.tiles[i][0]);
+		tiles[i].removeEventListener('mouseout', this.listeners.tiles[i][1]);
+	}
+	this.listeners.tiles = null;
+	var arrows = this.svg.getElementById('arrows').childNodes;
+	for (i = 0; i < arrows.length; i++) {
+		arrows[i].removeEventListener('mouseover', this.listeners.arrows[i][0]);
+		arrows[i].removeEventListener('click', this.listeners.arrows[i][1]);
+		arrows[i].removeEventListener('mouseout', this.listeners.arrows[i][2]);
+	}
+	this.listeners.arrows = null;
+};
+
 // event listeners
 game.onTileOver = function (x, y, e) {
-	console.log('OVER', x, y, this);
 	e.target.classList.add('highlight0');
-	for (var direction = 0; direction < 8; direction++) {
+	for (var direction = 0; direction < Direction.INTERCARDINAL; direction++) {
 		var indices = this.topology.getRay(this.tiles, direction, x, y);
 		for (var i = 0; i < indices.length; i++) {
 			var x2 = indices[i][0];
@@ -257,7 +332,6 @@ game.onTileOver = function (x, y, e) {
 };
 
 game.onTileOut = function (x, y, e) {
-	console.log('OUT', x, y, this);
 	var tiles = this.svg.getElementById('tiles').childNodes;
 	for (var i = 0; i < tiles.length; i++) {
 		tiles[i].setAttribute('class', '');
@@ -265,21 +339,18 @@ game.onTileOut = function (x, y, e) {
 };
 
 game.onArrowClick = function (direction, offset, e) {
-	console.log('CLICK', Direction.names[direction], offset, e, this);
 	var target = this.getArrowTarget(direction, offset);
 	// assert target not null
 	game.addToken(target[0], target[1], this.player);
-	game.nextTurn();
+	game.nextTurn(target[0], target[1]);
 };
 
 game.onArrowOver = function (direction, offset, e) {
-	console.log('OVER', Direction.names[direction], offset, e, this);
 	var target = this.getArrowTarget(direction, offset);
 	this.moveGhostToken(target[0], target[1], this.player);
 };
 
 game.onArrowOut = function (direction, offset, e) {
-	console.log('OUT', Direction.names[direction], offset, e, this);
 	this.moveGhostToken(null, null, 0);
 };
 
@@ -359,14 +430,46 @@ game.getArrowTarget = function (direction, offset) {
 	return null;
 };
 
-game.nextTurn = function () {
-	this.togglePlayer();
+game.testWinner = function (x, y) {
+	var placer = this.tiles[x][y];
+	// assert placer !== 0
+	for (var direction = 0; direction < Direction.HALF_INTERCARDINAL; direction++) {
+		var forward = this.topology.getRay(this.tiles, direction, x, y);
+		var fvalues = forward.map(this.valueAtCoord, this);
+		var fcount = countRun(placer, fvalues);
+		var backward = this.topology.getRay(this.tiles, direction + Direction.HALF_INTERCARDINAL, x, y);
+		var bvalues = backward.map(this.valueAtCoord, this);
+		var bcount = countRun(placer, bvalues);
+		if ((fcount + bcount) >= 3) {
+			return backward.slice(0, bcount).concat(forward.slice(0, fcount));
+		}
+	}
+	return null;
+};
+
+game.updateArrows = function () {
 	var available = this.getAvailableArrows();
 	var arrows = this.svg.getElementById('arrows');
 	for (var i = 0; i < available.length; i++) {
 		arrows.childNodes[i].setAttribute(
 			'class', available[i] ? 'available' : '');
 	}
+};
+
+game.nextTurn = function (lastx, lasty) {
+	var available = this.getAvailableArrows();
+	if (available.length === 0) {
+		console.info('DRAW');
+		game.freeze('draw');
+	}
+	var result = game.testWinner(lastx, lasty);
+	if (result !== null) {
+		console.info(result);
+		game.freeze('player' + this.player.toString());
+	} else {
+		this.togglePlayer();
+	}
+	game.updateArrows();
 };
 
 game.togglePlayer = function () {
