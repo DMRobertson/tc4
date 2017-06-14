@@ -33,83 +33,6 @@ var Square = {
 		edges.setAttribute('points', s);
 		container.appendChild(edges);
 	},
-	getAvailableArrows: function (tiles) {
-		var width = tiles.length;
-		var height = tiles[0].length;
-		var output = new Array(2 * width + 2 * height);
-		var offset = 0;
-		var x;
-		for (x = 0; x < width; x++) {
-			output[offset + x] = tiles[x][0] === 0;
-		}
-		offset += width;
-		for (x = 0; x < width; x++) {
-			output[offset + x] = tiles[x][height - 1] === 0;
-		}
-		offset += width;
-		var y;
-		for (y = 0; y < height; y++) {
-			output[offset + y] = tiles[0][y] === 0;
-		}
-		offset += height;
-		for (y = 0; y < height; y++) {
-			output[offset + y] = tiles[width - 1][y] === 0;
-		}
-		return output;
-	},
-	getArrowTarget: function (tiles, direction, offset) {
-		var width = tiles.length;
-		var height = tiles[0].length;
-		var x;
-		var y;
-		switch (direction) {
-			case Direction.NORTH:
-				x = offset;
-				if (tiles[x][0] !== 0) {
-					break;
-				}
-				for (y = 1; y < height; y++) {
-					if (tiles[x][y] !== 0) {
-						break;
-					}
-				}
-				return [x, y - 1];
-			case Direction.SOUTH:
-				x = offset;
-				if (tiles[x][height - 1] !== 0) {
-					break;
-				}
-				for (y = height - 1; y >= 0; y--) {
-					if (tiles[x][y] !== 0) {
-						break;
-					}
-				}
-				return [x, y + 1];
-			case Direction.WEST:
-				y = offset;
-				if (tiles[0][y] !== 0) {
-					break;
-				}
-				for (x = 1; x < width; x++) {
-					if (tiles[x][y] !== 0) {
-						break;
-					}
-				}
-				return [x - 1, y];
-			case Direction.EAST:
-				y = offset;
-				if (tiles[width - 1][y] !== 0) {
-					break;
-				}
-				for (x = height - 1; x >= 0; x--) {
-					if (tiles[x][y] !== 0) {
-						break;
-					}
-				}
-				return [x + 1, y];
-		}
-		return null;
-	}
 };
 
 var topologies = {
@@ -269,10 +192,10 @@ game.moveGhostToken = function (x, y, player) {
 	}
 };
 
-// event listeners and game logic
+// event listeners
 game.onArrowClick = function (direction, offset, e) {
 	console.log('CLICK', Direction.names[direction], offset, e, this);
-	var target = this.topology.getArrowTarget(this.tiles, direction, offset);
+	var target = this.getArrowTarget(direction, offset);
 	// assert target not null
 	game.addToken(target[0], target[1], this.player);
 	game.nextTurn();
@@ -280,7 +203,7 @@ game.onArrowClick = function (direction, offset, e) {
 
 game.onArrowOver = function (direction, offset, e) {
 	console.log('OVER', Direction.names[direction], offset, e, this);
-	var target = this.topology.getArrowTarget(this.tiles, direction, offset);
+	var target = this.getArrowTarget(direction, offset);
 	this.moveGhostToken(target[0], target[1], this.player);
 };
 
@@ -289,9 +212,85 @@ game.onArrowOut = function (direction, offset, e) {
 	this.moveGhostToken(null, null, 0);
 };
 
+// game logic
+game.getAvailableArrows = function () {
+	var output = new Array(2 * this.width + 2 * this.height);
+	var offset = 0;
+	var x;
+	for (x = 0; x < this.width; x++) {
+		output[offset + x] = this.tiles[x][0] === 0;
+	}
+	offset += this.width;
+	for (x = 0; x < this.width; x++) {
+		output[offset + x] = this.tiles[x][this.height - 1] === 0;
+	}
+	offset += this.width;
+	var y;
+	for (y = 0; y < this.height; y++) {
+		output[offset + y] = this.tiles[0][y] === 0;
+	}
+	offset += this.height;
+	for (y = 0; y < this.height; y++) {
+		output[offset + y] = this.tiles[this.width - 1][y] === 0;
+	}
+	return output;
+};
+
+game.getArrowTarget = function (direction, offset) {
+	var x;
+	var y;
+	switch (direction) {
+		case Direction.NORTH:
+			x = offset;
+			if (this.tiles[x][0] !== 0) {
+				break;
+			}
+			for (y = 1; y < this.height; y++) {
+				if (this.tiles[x][y] !== 0) {
+					break;
+				}
+			}
+			return [x, y - 1];
+		case Direction.SOUTH:
+			x = offset;
+			if (this.tiles[x][this.height - 1] !== 0) {
+				break;
+			}
+			for (y = this.height - 1; y >= 0; y--) {
+				if (this.tiles[x][y] !== 0) {
+					break;
+				}
+			}
+			return [x, y + 1];
+		case Direction.WEST:
+			y = offset;
+			if (this.tiles[0][y] !== 0) {
+				break;
+			}
+			for (x = 1; x < this.width; x++) {
+				if (this.tiles[x][y] !== 0) {
+					break;
+				}
+			}
+			return [x - 1, y];
+		case Direction.EAST:
+			y = offset;
+			if (this.tiles[this.width - 1][y] !== 0) {
+				break;
+			}
+			for (x = this.height - 1; x >= 0; x--) {
+				if (this.tiles[x][y] !== 0) {
+					break;
+				}
+			}
+			return [x + 1, y];
+	}
+	return null;
+}
+
 game.nextTurn = function () {
 	this.togglePlayer();
-	var available = this.topology.getAvailableArrows(this.tiles, this.width, this.height);
+	var available = this.getAvailableArrows();
 	var arrows = this.svg.getElementById('arrows');
 	for (var i = 0; i < available.length; i++) {
 		arrows.childNodes[i].setAttribute(
@@ -317,6 +316,7 @@ game.togglePlayer = function () {
 	}
 };
 
+// HTML UI and startup
 var startup = function () {
 	game.svg = document.getElementById('grid');
 	document.getElementById('new_game').addEventListener('submit', processForm);
