@@ -38,11 +38,6 @@ svg {
 	fill: #e8e8e8;
 }
 
-#tile polygon {
-	fill: currentColor;
-	fill-opacity: inherit;
-}
-
 #tile .highlight {
 	fill: white;
 	fill-opacity: 0.35;
@@ -53,43 +48,58 @@ svg {
 	fill-opacity: 0.08;
 }
 
-#tile-player1 {
-	color: red;
-}
-
-#tile-player2 {
-	color: blue;
-}
-
-use {
-	fill-opacity: 0.2;
-}
-
-use:hover  {
-	color: yellow;
-	fill-opacity: 0.4;
-	/*filter: url(#insetGlow);*/
-}
-
 /* arrows */
-
-#arrow-north polygon {
-	fill: currentColor;
-}
 
 #arrow-north rect {
 	fill: transparent;
 }
 
-#tiles use[xlink|href='#tile'] {
+#arrow-north polygon {
+	fill: currentColor;
+}
+
+/* Arrow instances */ 
+
+#arrows use:hover  {
+	color: yellow;
+}
+
+#arrows use {
+	visibility: hidden;
+}
+
+#arrows use.available {
+	visibility: visible;
 	cursor: pointer;
+}
+
+/* Tokens */
+
+#token circle {
+	fill: currentColor;
+}
+
+#token-player1 use {
+	color: red;
+}
+
+#token-player2 use {
+	color: blue;
+}
+
+#ghost {
+	opacity: 0.5;
+}
+
+.invis {
+	visibility: hidden;
 }
 
 /* Topologies */
 
 .Square polygon {
 	fill: none;
-	stroke: black;
+	stroke: #666;
 	stroke-width: 20px;
 }
 
