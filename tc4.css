@@ -1,6 +1,7 @@
 @namespace xlink 'http://www.w3.org/1999/xlink';
 
 body {
+	font-family: sans-serif;
 	margin: 0;
 	box-shadow: inset 0 0 4em black;
 	background: white;
@@ -131,7 +132,7 @@ body:not(.winner) #arrows use.available {
 
 /* Topologies */
 
-.Square polygon {
+.Square polygon, .Cylinder polygon {
 	fill: none;
 	stroke: #666;
 	stroke-width: 20px;
