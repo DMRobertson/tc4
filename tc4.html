@@ -30,15 +30,15 @@
 			<input type="radio" name="topology" value="Projective Plane"  id="Projective Plane" /><label for="Projective Plane">Projective Plane</label>
 			<input type="radio" name="topology" value="Möbius strip"      id="Möbius strip"     /><label for="Möbius strip"    >Möbius strip    </label>
 			<input type="radio" name="topology" value="Klein bottle"      id="Klein bottle"     /><label for="Klein bottle"    >Klein bottle    </label>
-		<h2>Grid size</h2>
+		<h2 id="grid-size">Grid size</h2>
 			<datalist id="tickmarks">
-				<option value="4" />
-				<option value="5" />
-				<option value="6" />
-				<option value="7" />
-				<option value="8" />
-				<option value="9" />
-				<option value="10"/>
+				<option value="4"  label="4" />
+				<option value="5"            />
+				<option value="6"            />
+				<option value="7"            />
+				<option value="8"            />
+				<option value="9"            />
+				<option value="10" label="10"/>
 			</datalist>
 			<input type="range" name="xrange" list="tickmarks" min="4" max="10" />
 			<label for="xrange">Horizontal</label>
@@ -49,6 +49,25 @@
 	</form>
 	<svg id="grid" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 		<defs>
+			<filter id="glow" height="300%" width="300%" x="-75%" y="-75%">
+			<!-- Thicken out the original shape -->
+			<feMorphology operator="dilate" radius="4" in="SourceAlpha" result="thicken" />
+			<!-- Use a gaussian blur to create the soft blurriness of the glow -->
+			<feGaussianBlur in="thicken" stdDeviation="10" result="blurred" />
+
+			<!-- Change the colour -->
+			<feFlood flood-color="gold" result="glowColor" />
+
+			<!-- Color in the glows -->
+			<feComposite in="glowColor" in2="blurred" operator="in" result="softGlow_colored" />
+
+			<!--	Layer the effects together -->
+			<feMerge>
+				<feMergeNode in="softGlow_colored"/>
+				<feMergeNode in="SourceGraphic"/>
+			</feMerge>
+
+		</filter>
 			<g id="token">
 				<circle cx="50" cy="50" r="35" />
 			</g>
@@ -70,6 +89,11 @@
 			<g id="arrow-west">
 				<use xlink:href="#arrow-north" transform="rotate(270)" />
 			</g>
+			<linearGradient id="gradient-up" gradientUnits="userSpaceOnUse" x1="0%" y1="20" x2="0%" y2="-20" />
+			<linearGradient id="gradient-down" gradientUnits="userSpaceOnUse" x1="0%" y1="-20" x2="0%" y2="20" />
+			<linearGradient id="gradient-left" gradientUnits="userSpaceOnUse" x1="-20" y1="0" x2="20" y2="0" />
+			<linearGradient id="gradient-right" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="-20" y2="0" />
+			
 		</defs>
 		
 		<g id="board-group" />

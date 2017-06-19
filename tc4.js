@@ -25,6 +25,22 @@ const Direction = {
 	HALF_INTERCARDINAL: 4
 };
 
+// SVG Helpers
+var SVGLine = function (source, target, options) {
+	var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+	line.setAttribute('x1', source[0]);
+	line.setAttribute('y1', source[1]);
+	line.setAttribute('x2', target[0]);
+	line.setAttribute('y2', target[1]);
+	for (var key in options) {
+		if (!options.hasOwnProperty(key)) {
+			continue;
+		}
+		line.setAttribute(key, options[key]);
+	}
+	return line;
+};
+
 // Define the topologies
 
 var Square = {
@@ -32,10 +48,10 @@ var Square = {
 	addEdges: function (container, width, height) {
 		var edges = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
 		var coords = [
-			[-HALF_BORDER_SIZE, -HALF_BORDER_SIZE],
-			[-HALF_BORDER_SIZE, height + HALF_BORDER_SIZE],
-			[width + HALF_BORDER_SIZE, height + HALF_BORDER_SIZE],
-			[width + HALF_BORDER_SIZE, -HALF_BORDER_SIZE]
+			[0, 0],
+			[0, height],
+			[width, height],
+			[width, 0]
 		];
 		var s = '';
 		for (var i = 0; i < coords.length; i++) {
@@ -56,10 +72,10 @@ var Cylinder = {
 	addEdges: function (container, width, height) {
 		var edges = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
 		var coords = [
-			[HALF_BORDER_SIZE, -HALF_BORDER_SIZE],
-			[HALF_BORDER_SIZE, height + HALF_BORDER_SIZE],
-			[width - HALF_BORDER_SIZE, height + HALF_BORDER_SIZE],
-			[width - HALF_BORDER_SIZE, -HALF_BORDER_SIZE]
+			[0, 0],
+			[0, height],
+			[width, height],
+			[width, 0]
 		];
 		var s = '';
 		for (var i = 0; i < coords.length; i++) {
@@ -78,9 +94,33 @@ var Cylinder = {
 	}
 };
 
+var Torus = {
+	name: 'Torus',
+	addEdges: function (container, width, height) {
+		var NE = [width, 0];
+		var SE = [width, height];
+		var SW = [0, height];
+		var NW = [0, 0];
+		var north = SVGLine(NW, NE, {'class': 'north'});
+		var east = SVGLine(NE, SE, {'class': 'east'});
+		var south = SVGLine(SE, SW, {'class': 'south'});
+		var west = SVGLine(SW, NW, {'class': 'west'});
+		container.appendChild(north);
+		container.appendChild(east);
+		container.appendChild(south);
+		container.appendChild(west);
+	},
+	projectCoords: function (indices, width, height) {
+		return indices.map(function (value) {
+			return [(value[0] + width) % width, (value[1] + height) % height];
+		});
+	}
+};
+
 var topologies = {
 	'Square': Square,
-	'Cylinder': Cylinder
+	'Cylinder': Cylinder,
+	'Torus': Torus
 };
 
 // Utility functions
@@ -151,14 +191,14 @@ game.new = function (options) {
 };
 
 game.setupSVG = function () {
-	var width = (this.width + 2) * TILE_SIZE + BORDER_SIZE;
-	var height = (this.height + 2) * TILE_SIZE + BORDER_SIZE;
+	var width = (this.width + 2) * TILE_SIZE + 4 * BORDER_SIZE;
+	var height = (this.height + 2) * TILE_SIZE + 4 * BORDER_SIZE;
 	this.svg.setAttribute('width', width);
 	this.svg.setAttribute('height', height);
 
 	this.svg.setAttribute('viewBox',
-		'-' + (TILE_SIZE + BORDER_SIZE).toFixed() +
-		' -' + (TILE_SIZE + BORDER_SIZE).toFixed() +
+		'-' + (TILE_SIZE + 2 * BORDER_SIZE).toFixed() +
+		' -' + (TILE_SIZE + 2 * BORDER_SIZE).toFixed() +
 		' ' + width.toFixed() +
 		' ' + height.toFixed()
 	);
@@ -421,7 +461,7 @@ game.getArrowTarget = function (direction, offset) {
 			if (this.tiles[this.width - 1][y] !== 0) {
 				break;
 			}
-			for (x = this.height - 1; x >= 0; x--) {
+			for (x = this.width - 1; x >= 0; x--) {
 				if (this.tiles[x][y] !== 0) {
 					break;
 				}
@@ -528,7 +568,11 @@ game.togglePlayer = function () {
 // HTML UI and startup
 var startup = function () {
 	game.svg = document.getElementById('grid');
-	document.getElementById('new_game').addEventListener('submit', processForm);
+	var form = document.getElementById('new_game');
+	form.addEventListener('submit', processForm);
+	form.elements['xrange'].addEventListener('input', displayGridSize);
+	form.elements['yrange'].addEventListener('input', displayGridSize);
+	displayGridSize();
 };
 
 var processForm = function (e) {
@@ -539,6 +583,13 @@ var processForm = function (e) {
 		'height': this.elements['yrange'].valueAsNumber
 	};
 	game.new(options);
+};
+
+var displayGridSize = function (e) {
+	var form = document.getElementById('new_game');
+	var w = form.elements['xrange'].value;
+	var h = form.elements['yrange'].value;
+	document.getElementById('grid-size').textContent = 'Grid size: ' + w + ' x ' + h;
 };
 
 document.addEventListener('DOMContentLoaded', startup);

@@ -25,16 +25,19 @@ body.player2 {
 	background: #cfdef7;
 }
 
+body.draw {
+	background: #gray;
+}
+
 form { display: none; }
 .setup form { display: block; }
 .setup svg  { display: none; }
 
 svg {
 	display: flex;
-	width: 98vmin;
-	height: 98vmin;
-	margin: auto;
-	color: white;
+	width: 100vmin;
+	height: 100vmin;
+	margin: 0;
 }
 
 /* SVG Styles */
@@ -47,7 +50,7 @@ svg {
 
 #tile .highlight {
 	fill: white;
-	fill-opacity: 0.35;
+	fill-opacity: 0.4;
 }
 
 #tile .shadow {
@@ -56,6 +59,10 @@ svg {
 }
 
 /* tile instances */
+
+#tiles use {
+	color: #eee;
+}
 
 #tiles use.highlight0 {
 	color: hsl(50, 93%, 75%);
@@ -91,9 +98,11 @@ svg {
 
 #arrows use:hover  {
 	color: yellow;
+	filter: url(#glow);
 }
 
 #arrows use {
+	color: #f8f8f8;
 	visibility: hidden;
 }
 
@@ -135,6 +144,10 @@ body:not(.winner) #arrows use.available {
 .Square polygon, .Cylinder polygon {
 	fill: none;
 	stroke: #666;
-	stroke-width: 20px;
+	stroke-width: 40px;
 }
 
+.Torus line {
+	stroke-width: 40px;
+	stroke: #ddd;
+}
