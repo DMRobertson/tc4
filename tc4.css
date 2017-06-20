@@ -32,6 +32,23 @@ body.draw {
 form { display: none; }
 .setup form { display: block; }
 .setup svg  { display: none; }
+input[type=submit] {
+	font-size: 150%;
+	display: block;
+	margin: 15px auto;
+}
+
+#topology_chooser label {
+	padding: 5px 5px 5px 0;
+	background: #fafafa;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
+
+
+#topology_chooser label:hover {
+	background: yellow;
+}
 
 svg {
 	display: flex;
@@ -62,6 +79,7 @@ svg {
 
 #tiles use {
 	color: #eee;
+	transition: color 0.1s;
 }
 
 #tiles use.highlight0 {
@@ -98,12 +116,13 @@ svg {
 
 #arrows use:hover  {
 	color: yellow;
-	filter: url(#glow);
+	fill: currentColor;
 }
 
 #arrows use {
 	color: #f8f8f8;
 	visibility: hidden;
+	filter: url(#shadow);
 }
 
 body:not(.winner) #arrows use.available {
@@ -132,7 +151,7 @@ body:not(.winner) #arrows use.available {
 }
 
 #ghost {
-	opacity: 0.5;
+	opacity: 0.3;
 }
 
 #tokens .invis {
@@ -141,13 +160,26 @@ body:not(.winner) #arrows use.available {
 
 /* Topologies */
 
-.Square polygon, .Cylinder polygon {
+.glued {
+	stroke-dasharray: 5, 28.33333;
+	stroke-dashoffset: 18.16666;
+	stroke: #ddd;
+	stroke-width: 20px;
+	stroke-linecap: round;
+	stroke: rgb(94, 152, 87);
+}
+
+.solid {
 	fill: none;
 	stroke: #666;
 	stroke-width: 40px;
 }
 
-.Torus line {
-	stroke-width: 40px;
-	stroke: #ddd;
+.Square .solid {	
+	stroke-linecap: square;
 }
+
+.Torus .north, .Torus .south {
+	stroke: rgb(152, 86, 137);
+}
+

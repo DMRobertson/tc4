@@ -21,16 +21,19 @@
 </head>
 <body class="setup">
 	<form id="new_game">
-		<h1>New Game</h1>
-		<h2>Topology</h2>
-			<input type="radio" name="topology" value="Square"   checked  id="Square"           /><label for="Square"          >Square          </label>
-			<input type="radio" name="topology" value="Cylinder"          id="Cylinder"         /><label for="Cylinder"        >Cylinder        </label>
-			<input type="radio" name="topology" value="Torus"             id="Torus"            /><label for="Torus"           >Torus           </label>
-			<input type="radio" name="topology" value="Sphere"            id="Sphere"           /><label for="Sphere"          >Sphere          </label>
-			<input type="radio" name="topology" value="Projective Plane"  id="Projective Plane" /><label for="Projective Plane">Projective Plane</label>
-			<input type="radio" name="topology" value="Möbius strip"      id="Möbius strip"     /><label for="Möbius strip"    >Möbius strip    </label>
-			<input type="radio" name="topology" value="Klein bottle"      id="Klein bottle"     /><label for="Klein bottle"    >Klein bottle    </label>
-		<h2 id="grid-size">Grid size</h2>
+		<h1>Topological Connect Four</h1>
+		<section id="topology_chooser">
+			<h2>Topology</h2>
+			<label><input type="radio" name="topology" value="Square" checked />Square</label>
+			<label><input type="radio" name="topology" value="Cylinder" />Cylinder</label>
+			<label><input type="radio" name="topology" value="Torus" />Torus</label>
+			<label><input type="radio" name="topology" value="Sphere" />Sphere</label>
+			<label><input type="radio" name="topology" value="Projective Plane" />Projective Plane</label>
+			<label><input type="radio" name="topology" value="Möbius strip" />Möbius strip</label>
+			<label><input type="radio" name="topology" value="Klein bottle" />Klein bottle</label>
+		</section>
+		<section>
+			<h2 id="grid-size">Grid size</h2>
 			<datalist id="tickmarks">
 				<option value="4"  label="4" />
 				<option value="5"            />
@@ -44,30 +47,21 @@
 			<label for="xrange">Horizontal</label>
 			<input type="range" name="yrange" list="tickmarks" min="4" max="10" />
 			<label for="yrange">Vertical</label>
+		</section>
 		<input type="submit" value="New Game">
-		
 	</form>
 	<svg id="grid" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 		<defs>
-			<filter id="glow" height="300%" width="300%" x="-75%" y="-75%">
-			<!-- Thicken out the original shape -->
-			<feMorphology operator="dilate" radius="4" in="SourceAlpha" result="thicken" />
-			<!-- Use a gaussian blur to create the soft blurriness of the glow -->
-			<feGaussianBlur in="thicken" stdDeviation="10" result="blurred" />
-
-			<!-- Change the colour -->
-			<feFlood flood-color="gold" result="glowColor" />
-
-			<!-- Color in the glows -->
-			<feComposite in="glowColor" in2="blurred" operator="in" result="softGlow_colored" />
-
-			<!--	Layer the effects together -->
-			<feMerge>
-				<feMergeNode in="softGlow_colored"/>
-				<feMergeNode in="SourceGraphic"/>
-			</feMerge>
-
-		</filter>
+			<filter id="shadow" height="300%" width="300%" x="-75%" y="-75%">
+				<feMorphology operator="dilate" radius="4" in="SourceAlpha" result="thicken" />
+				<feGaussianBlur in="thicken" stdDeviation="4" result="blurred" />
+				<feFlood flood-color="rgba(0,0,0,0.3)"/>
+				<feComposite in2="blurred" result="blurredlighter" operator="in" />
+				<feMerge>
+					<feMergeNode in="blurredlighter"/>
+					<feMergeNode in="SourceGraphic"/>
+				</feMerge>
+			</filter>
 			<g id="token">
 				<circle cx="50" cy="50" r="35" />
 			</g>
@@ -78,7 +72,7 @@
 			</g>
 			<g id="arrow-north">
 				<rect x = "-50" y="-120" width="100" height="120" />
-				<polygon points="0,0 -40,-40 -13.3,-40 -13.3,-120 13.3,-120 13.3,-40 40,-40" />
+				<polygon points="0,-10 -40,-50 -13.3,-50 -13.3,-120 13.3,-120 13.3,-50 40,-50" />
 			</g>
 			<g id="arrow-east">
 				<use xlink:href="#arrow-north" transform="rotate(90)" />
@@ -89,10 +83,6 @@
 			<g id="arrow-west">
 				<use xlink:href="#arrow-north" transform="rotate(270)" />
 			</g>
-			<linearGradient id="gradient-up" gradientUnits="userSpaceOnUse" x1="0%" y1="20" x2="0%" y2="-20" />
-			<linearGradient id="gradient-down" gradientUnits="userSpaceOnUse" x1="0%" y1="-20" x2="0%" y2="20" />
-			<linearGradient id="gradient-left" gradientUnits="userSpaceOnUse" x1="-20" y1="0" x2="20" y2="0" />
-			<linearGradient id="gradient-right" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="-20" y2="0" />
 			
 		</defs>
 		

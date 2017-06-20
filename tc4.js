@@ -46,19 +46,18 @@ var SVGLine = function (source, target, options) {
 var Square = {
 	name: 'Square',
 	addEdges: function (container, width, height) {
-		var edges = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-		var coords = [
-			[0, 0],
-			[0, height],
-			[width, height],
-			[width, 0]
-		];
-		var s = '';
-		for (var i = 0; i < coords.length; i++) {
-			s += coords[i][0].toString() + ',' + coords[i][1].toString() + ' ';
-		}
-		edges.setAttribute('points', s);
-		container.appendChild(edges);
+		var NE = [width, 0];
+		var SE = [width, height];
+		var SW = [0, height];
+		var NW = [0, 0];
+		var north = SVGLine(NW, NE, {'class': 'solid north'});
+		var east = SVGLine(NE, SE, {'class': 'solid east'});
+		var south = SVGLine(SE, SW, {'class': 'solid south'});
+		var west = SVGLine(SW, NW, {'class': 'solid west'});
+		container.appendChild(north);
+		container.appendChild(east);
+		container.appendChild(south);
+		container.appendChild(west);
 	},
 	projectCoords: function (indices, width, height) {
 		return indices.filter(function (value) {
@@ -70,19 +69,18 @@ var Square = {
 var Cylinder = {
 	name: 'Cylinder',
 	addEdges: function (container, width, height) {
-		var edges = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-		var coords = [
-			[0, 0],
-			[0, height],
-			[width, height],
-			[width, 0]
-		];
-		var s = '';
-		for (var i = 0; i < coords.length; i++) {
-			s += coords[i][0].toString() + ',' + coords[i][1].toString() + ' ';
-		}
-		edges.setAttribute('points', s);
-		container.appendChild(edges);
+		var NE = [width, 0];
+		var SE = [width, height];
+		var SW = [0, height];
+		var NW = [0, 0];
+		var north = SVGLine(NW, NE, {'class': 'solid north'});
+		var east = SVGLine(NE, SE, {'class': 'glued east'});
+		var south = SVGLine(SE, SW, {'class': 'solid south'});
+		var west = SVGLine(SW, NW, {'class': 'glued west'});
+		container.appendChild(north);
+		container.appendChild(east);
+		container.appendChild(south);
+		container.appendChild(west);
 	},
 	projectCoords: function (indices, width, height) {
 		indices = indices.filter(function (value) {
@@ -101,10 +99,10 @@ var Torus = {
 		var SE = [width, height];
 		var SW = [0, height];
 		var NW = [0, 0];
-		var north = SVGLine(NW, NE, {'class': 'north'});
-		var east = SVGLine(NE, SE, {'class': 'east'});
-		var south = SVGLine(SE, SW, {'class': 'south'});
-		var west = SVGLine(SW, NW, {'class': 'west'});
+		var north = SVGLine(NW, NE, {'class': 'glued north'});
+		var east = SVGLine(NE, SE, {'class': 'glued east'});
+		var south = SVGLine(SE, SW, {'class': 'glued south'});
+		var west = SVGLine(SW, NW, {'class': 'glued west'});
 		container.appendChild(north);
 		container.appendChild(east);
 		container.appendChild(south);
