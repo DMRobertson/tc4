@@ -115,10 +115,35 @@ var Torus = {
 	}
 };
 
+var Sphere = {
+	name: 'Sphere',
+	addEdges: function (container, width, height) {
+		var NE = [width, 0];
+		var SE = [width, height];
+		var SW = [0, height];
+		var NW = [0, 0];
+		var north = SVGLine(NW, NE, {'class': 'glued north'});
+		var east = SVGLine(NE, SE, {'class': 'glued east'});
+		var south = SVGLine(SE, SW, {'class': 'glued south'});
+		var west = SVGLine(SW, NW, {'class': 'glued west'});
+		container.appendChild(north);
+		container.appendChild(east);
+		container.appendChild(south);
+		container.appendChild(west);
+		var gradient = document.getElementById('gradientTemplate');
+		gradient.setAttribute('x2', width);
+	},
+	projectCoords: function (indices, width, height) {
+		// TODO
+		return Square.projectCoords(indices, width, height);
+	}
+};
+
 var topologies = {
 	'Square': Square,
 	'Cylinder': Cylinder,
-	'Torus': Torus
+	'Torus': Torus,
+	'Sphere': Sphere
 };
 
 // Utility functions

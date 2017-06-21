@@ -120,7 +120,7 @@ svg {
 }
 
 #arrows use {
-	color: #f8f8f8;
+	color: #f0f0f0;
 	visibility: hidden;
 	filter: url(#shadow);
 }
@@ -138,7 +138,8 @@ body:not(.winner) #arrows use.available {
 
 /* token instances */
 
-#tokens use {
+#tokens use:not(#ghost) {
+	filter: url(#shadow);
 	pointer-events: none;
 }
 
@@ -163,7 +164,6 @@ body:not(.winner) #arrows use.available {
 .glued {
 	stroke-dasharray: 5, 28.33333;
 	stroke-dashoffset: 18.16666;
-	stroke: #ddd;
 	stroke-width: 20px;
 	stroke-linecap: round;
 	stroke: rgb(94, 152, 87);
@@ -182,4 +182,9 @@ body:not(.winner) #arrows use.available {
 .Torus .north, .Torus .south {
 	stroke: rgb(152, 86, 137);
 }
+
+.Sphere .south { stroke: url(#purple-WE); }
+.Sphere .west  { stroke: url(#purple-SN); }
+.Sphere .north { stroke: url(#green-WE); }
+.Sphere .east  { stroke: url(#green-SN); }
 
