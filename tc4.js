@@ -567,10 +567,41 @@ game.togglePlayer = function () {
 var startup = function () {
 	game.svg = document.getElementById('grid');
 	var form = document.getElementById('new_game');
+	restoreForm(form);
 	form.addEventListener('submit', processForm);
+	form.addEventListener('change', storeForm);
 	form.elements['xrange'].addEventListener('input', displayGridSize);
 	form.elements['yrange'].addEventListener('input', displayGridSize);
 	displayGridSize();
+};
+
+var storeForm = function (e) {
+	var element = e.target;
+	window.localStorage.setItem(element.name, element.value);
+};
+
+var restoreForm = function (form) {
+	var i;
+	var keys = ['xrange', 'yrange'];
+	for (i = 0; i < keys.length; i++) {
+		var key = keys[i];
+		var value = window.localStorage.getItem(key);
+		if (value === null) {
+			continue;
+		}
+		var ele = form.querySelector('input[name=' + key + ']');
+		ele.value = value;
+	}
+	var topology = window.localStorage.getItem('topology');
+	if (topology !== null) {
+		var radios = form.querySelectorAll('input[name=topology]');
+		for (i = 0; i < radios.length; i++) {
+			if (radios[i].value === topology) {
+				radios[i].setAttribute('checked', '');
+				break;
+			}
+		}
+	}
 };
 
 var processForm = function (e) {
