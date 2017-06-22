@@ -140,11 +140,70 @@ var Sphere = {
 	}
 };
 
+var Mobius = {
+	name: 'Mobius',
+	addEdges: function (container, width, height) {
+		var NE = [width, 0];
+		var SE = [width, height];
+		var SW = [0, height];
+		var NW = [0, 0];
+		var north = SVGLine(NW, NE, {'class': 'solid north'});
+		var east = SVGLine(NE, SE, {'class': 'glued east'});
+		var south = SVGLine(SE, SW, {'class': 'solid south'});
+		var west = SVGLine(SW, NW, {'class': 'glued west'});
+		container.appendChild(north);
+		container.appendChild(east);
+		container.appendChild(south);
+		container.appendChild(west);
+	},
+	projectCoords: function (indices, width, height) {
+		indices = indices.filter(function (value) {
+			return value[1] >= 0 & value[1] < height;
+		});
+		return indices.map(function (value) {
+			if (value[0] < 0 || value[0] >= width) {
+				// assuming we don't wrap round twice
+				value[1] = height - value[1] - 1;
+			}
+			return [(value[0] + width) % width, value[1]];
+		});
+	}
+};
+
+var Klein = {
+	name: 'Klein',
+	addEdges: function (container, width, height) {
+		var NE = [width, 0];
+		var SE = [width, height];
+		var SW = [0, height];
+		var NW = [0, 0];
+		var north = SVGLine(NW, NE, {'class': 'glued north'});
+		var east = SVGLine(NE, SE, {'class': 'glued east'});
+		var south = SVGLine(SE, SW, {'class': 'glued south'});
+		var west = SVGLine(SW, NW, {'class': 'glued west'});
+		container.appendChild(north);
+		container.appendChild(east);
+		container.appendChild(south);
+		container.appendChild(west);
+	},
+	projectCoords: function (indices, width, height) {
+		return indices.map(function (value) {
+			if (value[0] < 0 || value[0] >= width) {
+				// assuming we don't wrap round twice
+				value[1] = height - value[1] - 1;
+			}
+			return [(value[0] + width) % width, (value[1] + height) % height];
+		});
+	}
+};
+
 var topologies = {
 	'Square': Square,
 	'Cylinder': Cylinder,
 	'Torus': Torus,
-	'Sphere': Sphere
+	// 'Sphere': Sphere,
+	'Möbius strip': Mobius,
+	'Klein bottle': Klein
 };
 
 // Utility functions

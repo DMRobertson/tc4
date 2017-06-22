@@ -183,3 +183,7 @@ body:not(.winner) #arrows use.available {
 .Sphere .north { stroke: url(#green-WE); }
 .Sphere .east  { stroke: url(#green-SN); }
 
+.Mobius .west, .Klein .west { stroke: url(#green-SN); }	
+.Mobius .east, .Klein .east { stroke: url(#green-NS); }	
+.Klein .north, .Klein .south { stroke: url(#purple-WE); }	
+
