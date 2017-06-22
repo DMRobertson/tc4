@@ -45,9 +45,14 @@ input[type=submit] {
 	border-radius: 3px;
 }
 
+#topology_chooser label.disabled {
+	background: hsl(0, 20%, 76%);
+}
 
-#topology_chooser label:hover {
+
+#topology_chooser label:not(.disabled):hover {
 	background: yellow;
+	cursor: pointer;
 }
 
 svg {
@@ -65,12 +70,12 @@ svg {
 	fill: currentColor;
 }
 
-#tile .highlight {
+.highlight {
 	fill: white;
 	fill-opacity: 0.4;
 }
 
-#tile .shadow {
+.shadow {
 	fill: black;
 	fill-opacity: 0.08;
 }
@@ -82,21 +87,11 @@ svg {
 	transition: color 0.1s;
 }
 
-#tiles use.highlight0 {
-	color: hsl(50, 93%, 75%);
-}
-
-#tiles use.highlight1 {
-	color: hsl(50, 93%, 81%);
-}
-
-#tiles use.highlight2 {
-	color: hsl(50, 93%, 86%);
-}
-
-#tiles use.highlight3 {
-	color: hsl(50, 93%, 93%);
-}
+/* reverse order so that lower numbers (brighter) have higher specificity*/
+#tiles use.highlight3 { color: hsl(50, 93%, 93%); }
+#tiles use.highlight2 { color: hsl(50, 93%, 86%); }
+#tiles use.highlight1 { color: hsl(50, 93%, 81%); }
+#tiles use.highlight0 { color: hsl(50, 93%, 75%); }
 
 #tiles use.winner {
 	color: gold;
@@ -120,7 +115,7 @@ svg {
 }
 
 #arrows use {
-	color: #f0f0f0;
+	color: #f2f2f2;
 	visibility: hidden;
 	filter: url(#shadow);
 }
@@ -144,11 +139,11 @@ body:not(.winner) #arrows use.available {
 }
 
 #tokens .player1 {
-	color: red;
+	color: hsl(0, 70%, 65%);
 }
 
 #tokens .player2 {
-	color: blue;
+	color: hsl(228, 73%, 60%);
 }
 
 #ghost {

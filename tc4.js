@@ -27,11 +27,14 @@ const Direction = {
 
 // SVG Helpers
 var SVGLine = function (source, target, options) {
-	var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-	line.setAttribute('x1', source[0]);
-	line.setAttribute('y1', source[1]);
-	line.setAttribute('x2', target[0]);
-	line.setAttribute('y2', target[1]);
+	// should really use a line, but I can't stroke purely horiz or purely vert lines with gradients because of https://stackoverflow.com/a/21639059/5252017
+	var line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+	var s = '';
+	s += 'M' + source[0] + ',' + source[1] + ' ';
+	s += 'L' + target[0] + ',' + target[1] + ' ';
+	// Hack to make bounding box have nonzero width and height
+	s += 'M -1 -1';
+	line.setAttribute('d', s);
 	for (var key in options) {
 		if (!options.hasOwnProperty(key)) {
 			continue;
@@ -130,8 +133,6 @@ var Sphere = {
 		container.appendChild(east);
 		container.appendChild(south);
 		container.appendChild(west);
-		var gradient = document.getElementById('gradientTemplate');
-		gradient.setAttribute('x2', width);
 	},
 	projectCoords: function (indices, width, height) {
 		// TODO
@@ -623,7 +624,10 @@ var restoreForm = function (form) {
 		for (i = 0; i < radios.length; i++) {
 			if (radios[i].value === topology) {
 				radios[i].setAttribute('checked', '');
-				break;
+			}
+			if (!(radios[i].value in topologies)) {
+				radios[i].setAttribute('disabled', '');
+				radios[i].parentElement.classList.add('disabled');
 			}
 		}
 	}

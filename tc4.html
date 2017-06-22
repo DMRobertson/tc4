@@ -53,7 +53,7 @@
 	<svg id="grid" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 		<defs>
 			<filter id="shadow" height="300%" width="300%" x="-75%" y="-75%">
-				<feMorphology operator="dilate" radius="4" in="SourceAlpha" result="thicken" />
+				<feMorphology operator="dilate" radius="2" in="SourceAlpha" result="thicken" />
 				<feGaussianBlur in="thicken" stdDeviation="4" result="blurred" />
 				<feFlood flood-color="rgba(0,0,0,0.3)"/>
 				<feComposite in2="blurred" result="blurredlighter" operator="in" />
@@ -64,6 +64,22 @@
 			</filter>
 			<g id="token">
 				<circle cx="50" cy="50" r="35" />
+				<path class="highlight" transform="translate(50, 50)" d="
+				M 22.0,-22.0
+				A 30,30 0 0 0 -22.0,-22.0
+				A 30,30 0 0 0 -22.0, 22.0
+				L -24.7,24.7
+				A 35,35 0 0 1 -24.7,-24.7
+				A 35,35 0 0 1  24.7,-24.7
+				Z" />
+				<path class="shadow" transform="translate(50, 50)" d="
+				M 22.0,-22.0
+				A 30,30 0 0 1  22.0, 22.0
+				A 30,30 0 0 1 -22.0, 22.0
+				L -24.7,24.7
+				A 35,35 0 0 0  24.7, 24.7
+				A 35,35 0 0 0  24.7,-24.7
+				Z" />
 			</g>
 			<g id="tile">
 				<rect width="100" height="100" />
@@ -83,18 +99,19 @@
 			<g id="arrow-west">
 				<use xlink:href="#arrow-north" transform="rotate(270)" />
 			</g>
-			<linearGradient id="gradientTemplate" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="100%" y2="0" spreadMethod="repeat" />
-			<linearGradient id="green-WE" href="#gradientTemplate">
+			<linearGradient id="green">
 				<stop stop-color="hsl(121, 39%, 30%)" offset="0" />
 				<stop stop-color="hsl(121, 48%, 78%)" offset="1" />
-			</linearGradient>
-			<linearGradient id="green-SN" href="#green-WE"  gradientTransform="rotate(270)" />
-			<linearGradient id="purple-WE" href="#gradientTemplate">
+			</radialGradient>
+			<linearGradient id="green-WE" href="#green" x1="0" y1="0" x2="100%" y2="0" />
+			<linearGradient id="green-SN" href="#green" x1="0" y1="100%" x2="0" y2="0" />
+			<linearGradient id="green-NS" href="#green" x1="0" y1="0" x2="0" y2="100%" />
+			<linearGradient id="purple">
 				<stop stop-color="rgb(135, 68, 120)" offset="0" />
 				<stop stop-color="rgb(209, 167, 199)" offset="1" />
-			</linearGradient>
-			<linearGradient id="purple-SN" href="#purple-WE"  gradientTransform="rotate(270)" />
-			
+			</linearGradient>			
+			<linearGradient id="purple-WE" href="#purple" x1="0" y1="0" x2="100%" y2="0" />
+			<linearGradient id="purple-SN" href="#purple" x1="0" y1="100%" x2="0" y2="0" />
 		</defs>
 		
 		<g id="board-group" />
